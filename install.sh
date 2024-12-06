@@ -228,15 +228,7 @@ fdisk -l /dev/$disk
   genfstab /mnt >> /mnt/etc/fstab
   #END GENERATE FSTAB
   #BEGIN MOVING BASHRC THEME AND PART2 OF SCRIPT
-  echo "Moving required files to Arch-Chroot.."
-  mv ./ArchInstallAssistantP2.sh /mnt/ArchInstallAssistantP2.sh
-  mv ./archinstall_default.theme.sh /mnt/archinstall_default.theme.sh
-  #END MOVING BASHRC THEME AND PART2 OF SCRIPT
-  echo "After chrooting you will need to bash into part 2"
-  echo "Location = /ArchInstallAssistantPart2.sh"
-  read -p "Press ENTER to continue"
-  echo "Chrooting into /mnt"
-  arch-chroot /mnt
+
 ######### EXPERIMENTAL ##########
 
   echo "Setting up Time Zone"
