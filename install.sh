@@ -240,41 +240,67 @@ fdisk -l /dev/$disk
   echo "Example & Default = New_York"
   read -p "City : " City
   City=${City:-New_York}
-  echo 'ln -sf /usr/share/zoneinfo/$Region/$City /etc/localtime' | arch-chroot /mnt </dev/null
+  arch-chroot /mnt <<EOF
+  ln -sf /usr/share/zoneinfo/$Region/$City /etc/localtime
+  EOF
   echo "Now using $Region/$City"
   read -p "Use default locale? default=en_US.UTF-8 [y/n] : " usedefaultlocale
   if [ "${usedefaultlocale,,}" = "y" ]; then
-  echo 'touch /etc/locale.conf' | arch-chroot /mnt </dev/null
-  echo 'sed -i 171s/.*/en_US.UTF-8\ UTF-8/ /etc/locale.gen' | arch-chroot /mnt </dev/null
-  echo 'sed -i 1s/.*/LANG=en_US.UTF-8/ /etc/locale.conf' | arch-chroot /mnt </dev/null
+  arch-chroot /mnt <<EOF
+  touch /etc/locale.conf
+  EOF
+  arch-chroot /mnt <<EOF
+  sed -i 171s/.*/en_US.UTF-8\ UTF-8/ /etc/locale.gen
+  EOF
+  arch-chroot /mnt <<EOF
+  sed -i 1s/.*/LANG=en_US.UTF-8/ /etc/locale.conf
+  EOF
   fi
   if [ "${usedefaultlocale,,}" = "n" ]; then
   echo "You will now need to uncomment your locale"
   read -p "Press ENTER when ready"
-  echo 'nano /etc/locale.gen' | arch-chroot /mnt </dev/null
+  arch-chroot /mnt <<EOF
+  nano /etc/locale.gen
+  EOF
   echo "Add LANG=en_US.UTF-8 to the following file"
   read -p "Press ENTER when ready"
-  echo 'nano /etc/locale.conf' | arch-chroot /mnt </dev/null
+  arch-chroot /mnt <<EOF
+  nano /etc/locale.conf
+  EOF
   echo "Done"
   fi
   echo "Generating Locale..."
-  echo 'locale-gen' | arch-chroot /mnt </dev/null
+  arch-chroot /mnt <<EOF
+  locale-gen
+  EOF
   read -p "hostname : " hostname
   if [ -f "/etc/hostname" ]; then
   echo "Removing /etc/hostname because it already exists"
-  echo 'rm /etc/hostname' | arch-chroot /mnt </dev/null
+  arch-chroot /mnt <<EOF
+  rm /etc/hostname
+  EOF
   fi
+  arch-chroot /mnt <<EOF
   touch /etc/hostname
-  echo '$hostname" > /etc/hostname' | arch-chroot /mnt </dev/null
+  EOF
+  echo "$hostname" > /etc/hostname
   echo "/etc/hostname was created with hostname [$hostname]"
   echo "Enter password for root"
-  echo 'passwd' | arch-chroot /mnt </dev/null
+  arch-chroot /mnt <<EOF
+  passwd
+  EOF
   echo "Creating Regular User"
   read -p "Enter your desired username : " username
-  echo 'useradd -m -G wheel -s /bin/bash $username' | arch-chroot /mnt </dev/null
-  echo 'passwd $username' | arch-chroot /mnt </dev/null
+  arch-chroot /mnt <<EOF
+  useradd -m -G wheel -s /bin/bash $username
+  EOF
+  arch-chroot /mnt <<EOF
+  passwd $username
+  EOF
   echo "Enabling SU Permissions for $username"
-  echo 'sed -i 125s/#\ // /etc/sudoers' | arch-chroot /mnt </dev/null
+  arch-chroot /mnt <<EOF
+  sed -i 125s/#\ // /etc/sudoers
+  EOF
   #fdisk -l
   #read -p "Disk for grub example sda = " disk
   #BEGIN ENABLE PARALLEL DOWNLOADS OPTION
@@ -308,7 +334,7 @@ fdisk -l /dev/$disk
   fi
   done
   echo "You chose $Parallel_Value download threads."
-  echo 'sed -i 37s/.*/ParallelDownloads\ =\ $Parallel_Value/ /etc/pacman.conf' | arch-chroot /mnt </dev/null
+  sed -i 37s/.*/ParallelDownloads\ =\ $Parallel_Value/ /etc/pacman.conf
   fi
   #END CHOOSING PARALLEL THREADS COUNT
 
@@ -317,7 +343,7 @@ fdisk -l /dev/$disk
   case "${nm,,}" in
   y)
   echo "Network Manager service enabled."
-  echo 'systemctl enable NetworkManager' | arch-chroot /mnt </dev/null
+  systemctl enable NetworkManager
   break
   ;;
   n)
@@ -335,7 +361,7 @@ fdisk -l /dev/$disk
   case "${ssh,,}" in
   y)
   echo "SSH service enabled."
-  echo 'systemctl enable sshd' | arch-chroot /mnt </dev/null
+  systemctl enable sshd
   break
   ;;
   n)
@@ -354,7 +380,7 @@ fdisk -l /dev/$disk
   case "${sddm,,}" in
   y)
   echo "SDDM service enabled."
-  echo 'systemctl enable sddm' | arch-chroot /mnt </dev/null
+  systemctl enable sddm
   break
   ;;
   n)
@@ -374,7 +400,7 @@ fdisk -l /dev/$disk
   case "${gdm,,}" in
   y)
   echo "GDM service enabled."
-  echo 'systemctl enable gdm' | arch-chroot /mnt </dev/null
+  systemctl enable gdm
   break
   ;;
   n)
@@ -394,7 +420,7 @@ fdisk -l /dev/$disk
   case "${lightdm,,}" in
   y)
   echo "LightDM service enabled."
-  echo 'systemctl enable lightdm' | arch-chroot /mnt </dev/null
+  systemctl enable lightdm
   break
   ;;
   n)
@@ -413,17 +439,17 @@ fdisk -l /dev/$disk
   case "${omb,,}" in
   y)
   echo "Installing oh-my-bash..."
-  echo 'bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" --unattended' | arch-chroot /mnt </dev/null
-  echo 'sed -i 12s/.*/OSH_THEME="archinstall_default"/ ~/.bashrc' | arch-chroot /mnt </dev/null
+  bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" --unattended
+  sed -i 12s/.*/OSH_THEME="archinstall_default"/ ~/.bashrc
   echo "oh-my-bash installed for user root"
   echo "copying root config to $username"
-  echo 'cp -rf ~/.* /home/$username/' | arch-chroot /mnt </dev/null
-  echo 'mkdir /home/$username/.oh-my-bash/themes/archinstall_default' | arch-chroot /mnt </dev/null
-  echo 'cp ./archinstall_default.theme.sh /home/$username/.oh-my-bash/themes/archinstall_default/archinstall_default.theme.sh' | arch-chroot /mnt </dev/null
-  echo 'mkdir /root/.oh-my-bash/themes/archinstall_default' | arch-chroot /mnt </dev/null
-  echo 'mv ./archinstall_default.theme.sh /root/.oh-my-bash/themes/archinstall_default/archinstall_default.theme.sh' | arch-chroot /mnt </dev/null
-  echo 'chmod +rwx /home/$username/.*' | arch-chroot /mnt </dev/null
-  echo 'sed -i "8c export OSH='/home/$username/.oh-my-bash'" /home/$username/.bashrc' | arch-chroot /mnt </dev/null
+  cp -rf ~/.* /home/$username/
+  mkdir /home/$username/.oh-my-bash/themes/archinstall_default
+  cp ./archinstall_default.theme.sh /home/$username/.oh-my-bash/themes/archinstall_default/archinstall_default.theme.sh
+  mkdir /root/.oh-my-bash/themes/archinstall_default
+  mv ./archinstall_default.theme.sh /root/.oh-my-bash/themes/archinstall_default/archinstall_default.theme.sh
+  chmod +rwx /home/$username/.*
+  sed -i "8c export OSH='/home/$username/.oh-my-bash'" /home/$username/.bashrc
   echo "oh-my-bash set to use archinstall_default theme"
   echo "More bash themes can be found at default for this install is [archinstall_default]"
   echo "https://github.com/ohmybash/oh-my-bash/tree/master/themes"
@@ -441,18 +467,18 @@ fdisk -l /dev/$disk
   done
   
   echo "Installing Grub to /boot"
-  echo 'grub-install --efi-directory=/boot' | arch-chroot /mnt </dev/null
+  grub-install --efi-directory=/boot
   echo "Configuring Grub /boot/grub/grub.cfg"
-  echo 'grub-mkconfig -o /boot/grub/grub.cfg' | arch-chroot /mnt </dev/null
+  grub-mkconfig -o /boot/grub/grub.cfg
 
   while true; do
   read -p "Change Grub Theme? [y/n] = " grub
   case "${grub,,}" in
   y)
   echo "Changing Grub Theme."
-  echo 'git clone https://github.com/RomjanHossain/Grub-Themes.git' | arch-chroot /mnt </dev/null
-  echo 'cd ./Grub-Themes' | arch-chroot /mnt </dev/null
-  echo 'bash ./install.sh' | arch-chroot /mnt </dev/null
+  git clone https://github.com/RomjanHossain/Grub-Themes.git
+  cd ./Grub-Themes
+  bash ./install.sh
   #Credits to RomjanHossain
   break
   ;;
@@ -469,5 +495,5 @@ fdisk -l /dev/$disk
   clear
   echo "___________________________________________________________________"
   echo "             \/ \/ \/ \/ DO THIS RIGHT NOW \/ \/ \/"
-  echo "Input [exit] to continue & then [shutdown now]
-
+  echo "Input [exit] to continue & then input bash ./ArchInstallAssistantP3.sh"
+# Written by Nakildias
