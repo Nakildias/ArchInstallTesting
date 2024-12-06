@@ -419,8 +419,12 @@ fdisk -l /dev/$disk
   echo "copying root config to $username"
   arch-chroot /mnt cp -rf ~/.* /home/$username/
   arch-chroot /mnt mkdir /home/$username/.oh-my-bash/themes/archinstall_default
+  arch-chroot /mnt cd /home/$username
+  arch-chroot /mnt git clone https://github.com/Nakildias/ArchInstallTesting.git
+  arch-chroot /mnt cd ./ArchInstallTesting
   arch-chroot /mnt cp ./archinstall_default.theme.sh /home/$username/.oh-my-bash/themes/archinstall_default/archinstall_default.theme.sh
   arch-chroot /mnt mkdir /root/.oh-my-bash/themes/archinstall_default
+  arch-chroot /mnt cd /home/$username/ArchInstallTesting
   arch-chroot /mnt mv ./archinstall_default.theme.sh /root/.oh-my-bash/themes/archinstall_default/archinstall_default.theme.sh
   arch-chroot /mnt chmod +rwx /home/$username/.*
   arch-chroot /mnt sed -i "8c export OSH='/home/$username/.oh-my-bash'" /home/$username/.bashrc
