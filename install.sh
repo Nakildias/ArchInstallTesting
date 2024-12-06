@@ -240,7 +240,7 @@ fdisk -l /dev/$disk
   echo "Example & Default = New_York"
   read -p "City : " City
   City=${City:-New_York}
-  echo 'ln -sf /usr/share/zoneinfo/$Region/$City /etc/localtime' | arch-chroot /mnt
+  #BROKEN echo 'ln -sf /usr/share/zoneinfo/$Region/$City /etc/localtime' | arch-chroot /mnt
   echo "Now using $Region/$City"
   read -p "Use default locale? default=en_US.UTF-8 [y/n] : " usedefaultlocale
   if [ "${usedefaultlocale,,}" = "y" ]; then
