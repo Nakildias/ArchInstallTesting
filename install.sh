@@ -240,67 +240,41 @@ fdisk -l /dev/$disk
   echo "Example & Default = New_York"
   read -p "City : " City
   City=${City:-New_York}
-  arch-chroot /mnt <<EOF
-  ln -sf /usr/share/zoneinfo/$Region/$City /etc/localtime
-  EOF
+  arch-chroot /mnt ln -sf /usr/share/zoneinfo/$Region/$City /etc/localtime
   echo "Now using $Region/$City"
   read -p "Use default locale? default=en_US.UTF-8 [y/n] : " usedefaultlocale
   if [ "${usedefaultlocale,,}" = "y" ]; then
-  arch-chroot /mnt <<EOF
-  touch /etc/locale.conf
-  EOF
-  arch-chroot /mnt <<EOF
-  sed -i 171s/.*/en_US.UTF-8\ UTF-8/ /etc/locale.gen
-  EOF
-  arch-chroot /mnt <<EOF
-  sed -i 1s/.*/LANG=en_US.UTF-8/ /etc/locale.conf
-  EOF
+  arch-chroot /mnt touch /etc/locale.conf
+  arch-chroot /mnt sed -i 171s/.*/en_US.UTF-8\ UTF-8/ /etc/locale.gen
+  arch-chroot /mnt sed -i 1s/.*/LANG=en_US.UTF-8/ /etc/locale.conf
   fi
   if [ "${usedefaultlocale,,}" = "n" ]; then
   echo "You will now need to uncomment your locale"
   read -p "Press ENTER when ready"
-  arch-chroot /mnt <<EOF
-  nano /etc/locale.gen
-  EOF
+  arch-chroot /mnt nano /etc/locale.gen
   echo "Add LANG=en_US.UTF-8 to the following file"
   read -p "Press ENTER when ready"
-  arch-chroot /mnt <<EOF
-  nano /etc/locale.conf
-  EOF
+  arch-chroot /mnt nano /etc/locale.conf
   echo "Done"
   fi
   echo "Generating Locale..."
-  arch-chroot /mnt <<EOF
-  locale-gen
-  EOF
+  arch-chroot /mnt locale-gen
   read -p "hostname : " hostname
   if [ -f "/etc/hostname" ]; then
   echo "Removing /etc/hostname because it already exists"
-  arch-chroot /mnt <<EOF
-  rm /etc/hostname
-  EOF
+  arch-chroot /mnt rm /etc/hostname
   fi
-  arch-chroot /mnt <<EOF
-  touch /etc/hostname
-  EOF
+  arch-chroot /mnt touch /etc/hostname
   echo "$hostname" > /etc/hostname
   echo "/etc/hostname was created with hostname [$hostname]"
   echo "Enter password for root"
-  arch-chroot /mnt <<EOF
-  passwd
-  EOF
+  arch-chroot /mnt passwd
   echo "Creating Regular User"
   read -p "Enter your desired username : " username
-  arch-chroot /mnt <<EOF
-  useradd -m -G wheel -s /bin/bash $username
-  EOF
-  arch-chroot /mnt <<EOF
-  passwd $username
-  EOF
+  arch-chroot /mnt useradd -m -G wheel -s /bin/bash $username
+  arch-chroot /mnt passwd $username
   echo "Enabling SU Permissions for $username"
-  arch-chroot /mnt <<EOF
-  sed -i 125s/#\ // /etc/sudoers
-  EOF
+  arch-chroot /mnt sed -i 125s/#\ // /etc/sudoers
   #fdisk -l
   #read -p "Disk for grub example sda = " disk
   #BEGIN ENABLE PARALLEL DOWNLOADS OPTION
@@ -334,7 +308,7 @@ fdisk -l /dev/$disk
   fi
   done
   echo "You chose $Parallel_Value download threads."
-  sed -i 37s/.*/ParallelDownloads\ =\ $Parallel_Value/ /etc/pacman.conf
+  arch-chroot /mnt sed -i 37s/.*/ParallelDownloads\ =\ $Parallel_Value/ /etc/pacman.conf
   fi
   #END CHOOSING PARALLEL THREADS COUNT
 
@@ -343,7 +317,7 @@ fdisk -l /dev/$disk
   case "${nm,,}" in
   y)
   echo "Network Manager service enabled."
-  systemctl enable NetworkManager
+  arch-chroot /mnt systemctl enable NetworkManager
   break
   ;;
   n)
@@ -361,7 +335,7 @@ fdisk -l /dev/$disk
   case "${ssh,,}" in
   y)
   echo "SSH service enabled."
-  systemctl enable sshd
+  arch-chroot /mnt systemctl enable sshd
   break
   ;;
   n)
@@ -380,7 +354,7 @@ fdisk -l /dev/$disk
   case "${sddm,,}" in
   y)
   echo "SDDM service enabled."
-  systemctl enable sddm
+  arch-chroot /mnt systemctl enable sddm
   break
   ;;
   n)
@@ -400,7 +374,7 @@ fdisk -l /dev/$disk
   case "${gdm,,}" in
   y)
   echo "GDM service enabled."
-  systemctl enable gdm
+  arch-chroot /mnt systemctl enable gdm
   break
   ;;
   n)
@@ -420,7 +394,7 @@ fdisk -l /dev/$disk
   case "${lightdm,,}" in
   y)
   echo "LightDM service enabled."
-  systemctl enable lightdm
+  arch-chroot /mnt systemctl enable lightdm
   break
   ;;
   n)
@@ -439,17 +413,17 @@ fdisk -l /dev/$disk
   case "${omb,,}" in
   y)
   echo "Installing oh-my-bash..."
-  bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" --unattended
-  sed -i 12s/.*/OSH_THEME="archinstall_default"/ ~/.bashrc
-  echo "oh-my-bash installed for user root"
+  arch-chroot /mnt bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" --unattended
+  arch-chroot /mnt sed -i 12s/.*/OSH_THEME="archinstall_default"/ ~/.bashrc
+  arch-chroot /mnt echo "oh-my-bash installed for user root"
   echo "copying root config to $username"
-  cp -rf ~/.* /home/$username/
-  mkdir /home/$username/.oh-my-bash/themes/archinstall_default
-  cp ./archinstall_default.theme.sh /home/$username/.oh-my-bash/themes/archinstall_default/archinstall_default.theme.sh
-  mkdir /root/.oh-my-bash/themes/archinstall_default
-  mv ./archinstall_default.theme.sh /root/.oh-my-bash/themes/archinstall_default/archinstall_default.theme.sh
-  chmod +rwx /home/$username/.*
-  sed -i "8c export OSH='/home/$username/.oh-my-bash'" /home/$username/.bashrc
+  arch-chroot /mnt cp -rf ~/.* /home/$username/
+  arch-chroot /mnt mkdir /home/$username/.oh-my-bash/themes/archinstall_default
+  arch-chroot /mnt cp ./archinstall_default.theme.sh /home/$username/.oh-my-bash/themes/archinstall_default/archinstall_default.theme.sh
+  arch-chroot /mnt mkdir /root/.oh-my-bash/themes/archinstall_default
+  arch-chroot /mnt mv ./archinstall_default.theme.sh /root/.oh-my-bash/themes/archinstall_default/archinstall_default.theme.sh
+  arch-chroot /mnt chmod +rwx /home/$username/.*
+  arch-chroot /mnt sed -i "8c export OSH='/home/$username/.oh-my-bash'" /home/$username/.bashrc
   echo "oh-my-bash set to use archinstall_default theme"
   echo "More bash themes can be found at default for this install is [archinstall_default]"
   echo "https://github.com/ohmybash/oh-my-bash/tree/master/themes"
@@ -467,18 +441,18 @@ fdisk -l /dev/$disk
   done
   
   echo "Installing Grub to /boot"
-  grub-install --efi-directory=/boot
+  arch-chroot /mnt grub-install --efi-directory=/boot
   echo "Configuring Grub /boot/grub/grub.cfg"
-  grub-mkconfig -o /boot/grub/grub.cfg
+  arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 
   while true; do
   read -p "Change Grub Theme? [y/n] = " grub
   case "${grub,,}" in
   y)
   echo "Changing Grub Theme."
-  git clone https://github.com/RomjanHossain/Grub-Themes.git
-  cd ./Grub-Themes
-  bash ./install.sh
+  arch-chroot /mnt git clone https://github.com/RomjanHossain/Grub-Themes.git
+  arch-chroot /mnt cd ./Grub-Themes
+  arch-chroot /mnt bash ./install.sh
   #Credits to RomjanHossain
   break
   ;;
