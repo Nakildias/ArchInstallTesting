@@ -470,3 +470,5 @@ fdisk -l /dev/$disk
   echo "___________________________________________________________________"
   echo "             \/ \/ \/ \/ DO THIS RIGHT NOW \/ \/ \/"
   echo "Input [exit] to continue & then [shutdown now]
+
+  exec bash -c "echo 'Arch-chroot installation completed successfully.'"
